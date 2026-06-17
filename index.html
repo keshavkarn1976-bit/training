@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GitHub Training - Welcome</title>
+
+<style>
+    *{
+        margin:0;
+        padding:0;
+        box-sizing:border-box;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body{
+        min-height:100vh;
+        display:flex;
+        justify-content:center;
+        align-items:center;
+        background: linear-gradient(
+            135deg,
+            #0f172a,
+            #1e293b,
+            #2563eb,
+            #06b6d4
+        );
+        background-size: 400% 400%;
+        animation: gradientMove 12s ease infinite;
+        overflow:hidden;
+    }
+
+    @keyframes gradientMove{
+        0%{background-position:0% 50%;}
+        50%{background-position:100% 50%;}
+        100%{background-position:0% 50%;}
+    }
+
+    .container{
+        width:90%;
+        max-width:900px;
+        text-align:center;
+        padding:60px;
+        border-radius:25px;
+        background:rgba(255,255,255,0.08);
+        backdrop-filter: blur(15px);
+        border:1px solid rgba(255,255,255,0.15);
+        box-shadow:0 20px 50px rgba(0,0,0,0.3);
+        animation: fadeIn 1.5s ease;
+    }
+
+    @keyframes fadeIn{
+        from{
+            opacity:0;
+            transform:translateY(30px);
+        }
+        to{
+            opacity:1;
+            transform:translateY(0);
+        }
+    }
+
+    .badge{
+        display:inline-block;
+        padding:10px 20px;
+        border-radius:50px;
+        background:rgba(255,255,255,0.15);
+        color:#fff;
+        font-size:14px;
+        letter-spacing:1px;
+        margin-bottom:25px;
+    }
+
+    h1{
+        font-size:4rem;
+        color:white;
+        margin-bottom:20px;
+        line-height:1.2;
+    }
+
+    .highlight{
+        background:linear-gradient(
+            90deg,
+            #60a5fa,
+            #22d3ee,
+            #f8fafc
+        );
+        -webkit-background-clip:text;
+        -webkit-text-fill-color:transparent;
+    }
+
+    p{
+        color:#e2e8f0;
+        font-size:1.2rem;
+        line-height:1.8;
+        margin-bottom:35px;
+    }
+
+    .buttons{
+        display:flex;
+        justify-content:center;
+        gap:20px;
+        flex-wrap:wrap;
+    }
+
+    .btn{
+        text-decoration:none;
+        padding:15px 35px;
+        border-radius:50px;
+        font-weight:600;
+        transition:0.3s ease;
+    }
+
+    .primary{
+        background:#ffffff;
+        color:#2563eb;
+    }
+
+    .primary:hover{
+        transform:translateY(-4px);
+        box-shadow:0 10px 25px rgba(255,255,255,0.3);
+    }
+
+    .secondary{
+        border:2px solid rgba(255,255,255,0.3);
+        color:white;
+    }
+
+    .secondary:hover{
+        background:rgba(255,255,255,0.15);
+        transform:translateY(-4px);
+    }
+
+    .footer{
+        margin-top:35px;
+        color:#cbd5e1;
+        font-size:0.95rem;
+    }
+
+    .circle{
+        position:absolute;
+        border-radius:50%;
+        background:rgba(255,255,255,0.08);
+        animation: float 10s infinite ease-in-out;
+    }
+
+    .c1{
+        width:250px;
+        height:250px;
+        top:-50px;
+        left:-50px;
+    }
+
+    .c2{
+        width:180px;
+        height:180px;
+        bottom:-40px;
+        right:-40px;
+    }
+
+    @keyframes float{
+        0%,100%{
+            transform:translateY(0);
+        }
+        50%{
+            transform:translateY(-20px);
+        }
+    }
+
+    @media(max-width:768px){
+        h1{
+            font-size:2.5rem;
+        }
+
+        .container{
+            padding:40px 25px;
+        }
+
+        p{
+            font-size:1rem;
+        }
+    }
+</style>
+</head>
+
+<body>
+
+<div class="circle c1"></div>
+<div class="circle c2"></div>
+
+<div class="container">
+    <div class="badge">
+        🚀 GitHub Learning Series
+    </div>
+
+    <h1>
+        Welcome to <span class="highlight">GitHub Training</span>
+    </h1>
+
+    <p>
+        Welcome to GitHub Training from <strong>Web</strong>.
+        Learn version control, repositories, branching strategies,
+        pull requests, collaboration workflows, GitHub Actions,
+        and modern DevOps practices through hands-on exercises and real-world examples.
+    </p>
+
+    <div class="buttons">
+        <a href="#" class="btn primary">Get Started</a>
+        <a href="#" class="btn secondary">Learn More</a>
+    </div>
+
+    <div class="footer">
+        © 2026 GitHub Training from Web | Empowering Developers
+    </div>
+</div>
+
+</body>
+</html>
