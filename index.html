@@ -1,191 +1,187 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Welcome to GitHub Training from Web</title>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+```
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: Arial, sans-serif;
+    }
 
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: Arial, sans-serif;
-        }
+    body {
+        background: #f4f7fb;
+        color: #333;
+    }
 
-        body {
-            background: #f4f7fb;
-            color: #333;
-        }
+    header {
+        background: linear-gradient(135deg, #24292e, #0366d6);
+        color: white;
+        text-align: center;
+        padding: 60px 20px;
+    }
 
-        header {
-            background: linear-gradient(135deg, #24292e, #0366d6);
-            color: white;
-            text-align: center;
-            padding: 60px 20px;
-        }
+    header h1 {
+        font-size: 3rem;
+        margin-bottom: 10px;
+    }
 
-        header h1 {
-            font-size: 3rem;
-            margin-bottom: 10px;
-        }
+    header p {
+        font-size: 1.2rem;
+    }
 
-        header p {
-            font-size: 1.2rem;
-        }
+    .container {
+        max-width: 1200px;
+        margin: auto;
+        padding: 40px 20px;
+    }
 
-        .container {
-            max-width: 1200px;
-            margin: auto;
-            padding: 40px 20px;
-        }
+    .section-title {
+        text-align: center;
+        margin-bottom: 30px;
+        color: #24292e;
+    }
 
-        .section-title {
-            text-align: center;
-            margin-bottom: 30px;
-            color: #24292e;
-        }
+    #training-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 20px;
+    }
 
-        #training-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 20px;
-        }
+    .card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        transition: transform .2s;
+    }
 
-        .card {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-            transition: transform .2s;
-        }
+    .card:hover {
+        transform: translateY(-5px);
+    }
 
-        .card:hover {
-            transform: translateY(-5px);
-        }
+    .card h3 {
+        color: #0366d6;
+        margin-bottom: 10px;
+    }
 
-        .card h3 {
-            color: #0366d6;
-            margin-bottom: 10px;
-        }
+    .card p {
+        margin-bottom: 10px;
+        line-height: 1.5;
+    }
 
-        .card p {
-            margin-bottom: 10px;
-            line-height: 1.5;
-        }
+    .tech {
+        display: inline-block;
+        background: #e8f0fe;
+        color: #0366d6;
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 14px;
+        margin-bottom: 15px;
+    }
 
-        .tech {
-            display: inline-block;
-            background: #e8f0fe;
-            color: #0366d6;
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 14px;
-            margin-bottom: 15px;
-        }
+    .btn {
+        display: inline-block;
+        background: #0366d6;
+        color: white;
+        text-decoration: none;
+        padding: 10px 15px;
+        border-radius: 6px;
+    }
 
-        .btn {
-            display: inline-block;
-            background: #0366d6;
-            color: white;
-            text-decoration: none;
-            padding: 10px 15px;
-            border-radius: 6px;
-        }
+    .btn:hover {
+        background: #024ea2;
+    }
 
-        .btn:hover {
-            background: #024ea2;
-        }
+    footer {
+        text-align: center;
+        padding: 30px;
+        background: #24292e;
+        color: white;
+        margin-top: 50px;
+    }
 
-        footer {
-            text-align: center;
-            padding: 30px;
-            background: #24292e;
-            color: white;
-            margin-top: 50px;
-        }
+    .loading {
+        text-align: center;
+        font-size: 20px;
+        padding: 40px;
+        grid-column: 1 / -1;
+    }
+</style>
+```
 
-        .loading {
-            text-align: center;
-            font-size: 20px;
-            padding: 40px;
-        }
-    </style>
 </head>
 <body>
 
-    <header>
-        <h1>Welcome to GitHub Training from Web</h1>
-        <p>Learn GitHub, DevOps, Cloud and Modern Technologies</p>
-    </header>
+```
+<header>
+    <h1>Welcome to GitHub Training from Web</h1>
+    <p>Learn GitHub, DevOps, Cloud and Modern Technologies</p>
+</header>
 
-    <div class="container">
+<div class="container">
 
-        <h2 class="section-title">Available Training Programs</h2>
+    <h2 class="section-title">Available Training Programs</h2>
 
-        <div id="training-list">
-            <div class="loading">Loading training data...</div>
-        </div>
-
+    <div id="training-list">
+        <div class="loading">Loading training data...</div>
     </div>
 
-    <footer>
-        © 2026 GitHub Training Portal
-    </footer>
+</div>
 
-    <script>
+<footer>
+    © 2026 GitHub Training Portal
+</footer>
 
-        const supabaseUrl = "https://yagecbzykodypgjkaazo.supabase.co";
+<script>
 
-        const supabaseKey = "sb_publishable_JkfpUKTHBirzTLILyZOlGg_iGfucFgm";
+    const SHEET_URL =
+    "https://docs.google.com/spreadsheets/d/e/2PACX-1vQovWmXKVQ2Uv-_uu2YDIL1XgcrddnFYklxgJNwJc9nPVWLsvNVWQSOYWH2ttGQXH0lxnV9ebMW3J7M/pub?output=csv";
 
-        const supabaseClient = supabase.createClient(
-            supabaseUrl,
-            supabaseKey
-        );
+    async function loadTrainingData() {
 
-        async function loadTrainingData() {
+        try {
 
-            const { data, error } = await supabaseClient
-                .from('trainingdata')
-                .select('*')
-                .order('id', { ascending: true });
+            const response = await fetch(SHEET_URL);
+            const csvText = await response.text();
+
+            const rows = csvText
+                .trim()
+                .split('\n')
+                .map(row => row.split(','));
 
             const container = document.getElementById('training-list');
 
-            if (error) {
-                console.error(error);
-
-                container.innerHTML = `
-                    <div class="card">
-                        <h3>Error Loading Data</h3>
-                        <p>${error.message}</p>
-                    </div>
-                `;
-                return;
-            }
-
             container.innerHTML = '';
 
-            data.forEach(item => {
+            rows.slice(1).forEach(row => {
+
+                const title = row[0] || '';
+                const desc = row[1] || '';
+                const tech = row[2] || '';
+                const link = row[3] || '#';
 
                 container.innerHTML += `
                     <div class="card">
-                        <h3>${item.title}</h3>
+                        <h3>${title}</h3>
 
-                        <p>${item.desc || ''}</p>
+                        <p>${desc}</p>
 
                         <div class="tech">
-                            ${item.tech || ''}
+                            ${tech}
                         </div>
 
                         <br>
 
                         <a
                             class="btn"
-                            href="${item.link}"
+                            href="${link}"
                             target="_blank"
                         >
                             Open Training
@@ -193,11 +189,24 @@
                     </div>
                 `;
             });
+
+        } catch (error) {
+
+            document.getElementById('training-list').innerHTML = `
+                <div class="card">
+                    <h3>Error Loading Data</h3>
+                    <p>${error.message}</p>
+                </div>
+            `;
+
+            console.error(error);
         }
+    }
 
-        loadTrainingData();
+    loadTrainingData();
 
-    </script>
+</script>
+```
 
 </body>
 </html>
