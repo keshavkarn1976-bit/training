@@ -16,19 +16,8 @@
 
 <body>
 
-    <!-- Header -->
-    <header>
-        <h1>Welcome to GitHub Training from Web</h1>
-        <p>Learn GitHub, DevOps, Cloud and Modern Technologies</p>
-    </header>
-
-    <!-- Navigation -->
-    <nav>
-        <a href="index.html">Home</a>
-        <a href="pages/about.html">About</a>
-        <a href="pages/courses.html">Courses</a>
-        <a href="pages/contact.html">Contact</a>
-    </nav>
+    <!-- Shared Header -->
+    <div id="header"></div>
 
     <!-- Main Content -->
     <div class="container">
@@ -38,24 +27,29 @@
         </h2>
 
         <div id="training-list">
+
             <div class="loading">
                 Loading training data...
             </div>
+
         </div>
 
     </div>
 
-    <!-- Footer -->
-    <footer>
-        © 2026 GitHub Training Portal
-    </footer>
+    <!-- Shared Footer -->
+    <div id="footer"></div>
 
     <!-- Firebase -->
     <script type="module" src="js/firebase.js"></script>
 
-    <!-- Supabase -->
+    <!-- Configuration -->
     <script src="js/config.js"></script>
+
+    <!-- Supabase -->
     <script src="js/supabase.js"></script>
+
+    <!-- Shared Components -->
+    <script src="js/common.js"></script>
 
     <!-- Main App -->
     <script src="js/app.js"></script>
