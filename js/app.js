@@ -1,3 +1,8 @@
+loadComponent("header", "components/header.html");
+
+loadComponent("footer", "components/footer.html");
+
+
 async function loadTrainingData() {
 
     const container =
