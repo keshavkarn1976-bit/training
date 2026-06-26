@@ -1,10 +1,8 @@
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+// Import Firebase modules directly from the CDN
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+// Your Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyAjklUxCpV17OajmV3UnAHqoVsNU9Q9-EM",
   authDomain: "github-training-portal.firebaseapp.com",
@@ -17,10 +15,11 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
 
 // Initialize Authentication
 const auth = getAuth(app);
 
-// Export auth so other files can use it
-export { auth };
+// Make auth available globally
+window.auth = auth;
+
+console.log("✅ Firebase initialized successfully");
