@@ -1,25 +1,72 @@
-// Import Firebase modules directly from the CDN
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-import { getAuth } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+import {
+    getAuth,
+    GoogleAuthProvider,
+    signInWithPopup,
+    signOut,
+    onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+import {
+    getFirestore,
+    doc,
+    getDoc,
+    setDoc,
+    updateDoc,
+    collection,
+    getDocs,
+    serverTimestamp
+} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
-// Your Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyAjklUxCpV17OajmV3UnAHqoVsNU9Q9-EM",
-  authDomain: "github-training-portal.firebaseapp.com",
-  projectId: "github-training-portal",
-  storageBucket: "github-training-portal.firebasestorage.app",
-  messagingSenderId: "1094939591410",
-  appId: "1:1094939591410:web:1b9139420d5c9b6562466b",
-  measurementId: "G-BQ4S0B91LN"
-};
+const ADMIN_EMAIL = "keshav.karn@gmail.com";
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-
-// Initialize Authentication
+const app = initializeApp(window.APP_CONFIG.firebase);
 const auth = getAuth(app);
+const db = getFirestore(app);
+const googleProvider = new GoogleAuthProvider();
 
-// Make auth available globally
-window.auth = auth;
+async function ensureUserDoc(user) {
+    const userRef = doc(db, "users", user.uid);
+    const snap = await getDoc(userRef);
 
-console.log("✅ Firebase initialized successfully");
+    if (!snap.exists()) {
+        await setDoc(userRef, {
+            email: user.email,
+            displayName: user.displayName,
+            photoURL: user.photoURL,
+            role: user.email === ADMIN_EMAIL ? "admin" : "user",
+            createdAt: serverTimestamp(),
+            lastLogin: serverTimestamp()
+        });
+    } else {
+        await updateDoc(userRef, { lastLogin: serverTimestamp() });
+    }
+}
+
+async function signInWithGoogle() {
+    const result = await signInWithPopup(auth, googleProvider);
+    await ensureUserDoc(result.user);
+    return result.user;
+}
+
+async function signOutUser() {
+    await signOut(auth);
+}
+
+async function getUserRole(uid) {
+    const snap = await getDoc(doc(db, "users", uid));
+    return snap.exists() ? snap.data().role : null;
+}
+
+async function getAllUsers() {
+    const snap = await getDocs(collection(db, "users"));
+    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+}
+
+window.firebaseAuth = {
+    auth,
+    signInWithGoogle,
+    signOutUser,
+    getUserRole,
+    getAllUsers,
+    onAuthStateChanged: (callback) => onAuthStateChanged(auth, callback)
+};

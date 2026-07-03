@@ -1,29 +1,21 @@
-<header class="site-header">
-
-    <div class="logo">
-        <a href="/training/">
-            GitHub Training Portal
-        </a>
-    </div>
-
-    <nav class="main-nav">
-
-        <a href="/training/">Home</a>
-
-        <a href="/training/pages/about.html">About</a>
-
-        <a href="/training/pages/courses.html">Courses</a>
-
-        <a href="/training/pages/contact.html">Contact</a>
-
-    </nav>
-
-    <div id="user-area">
-
-        <button id="loginBtn">
-            Login with Google
-        </button>
-
-    </div>
-
+<header class="bg-surface-container-lowest border-b border-outline-variant fixed top-0 left-0 right-0 z-50">
+<nav class="flex justify-between items-center w-full px-margin-desktop max-w-container-max mx-auto h-16">
+<div class="flex items-center gap-gutter">
+<a class="font-headline-md text-headline-md font-bold text-primary" href="{{base}}index.html">GitMastery</a>
+<div class="hidden md:flex items-center gap-6">
+<a class="font-body-md text-body-md text-primary font-bold border-b-2 border-primary pb-1 hover:text-primary transition-colors" href="#">Courses</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors" href="#">Resources</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors" href="#">About</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="hidden sm:flex relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="bg-surface-container-low border border-outline-variant rounded py-1.5 pl-10 pr-4 text-body-md focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Search courses..." type="text">
+</div>
+<div id="auth-area">
+<button id="signInBtn" class="bg-primary text-on-primary px-4 py-2 font-label-md text-label-md rounded-lg hover:bg-primary-container transition-all">Sign In</button>
+</div>
+</div>
+</nav>
 </header>
