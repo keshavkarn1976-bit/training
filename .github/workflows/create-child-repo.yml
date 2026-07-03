@@ -1,0 +1,310 @@
+name: Create Child Training Repo
+
+on:
+  workflow_dispatch:
+    inputs:
+      topic:
+        description: 'Topic name exactly as in Supabase tech column. Options: GitHub, Docker, Kubernetes, Cloud, DevOps'
+        required: true
+        default: 'GitHub'
+
+jobs:
+  create-child-repo:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Generate and publish child training portal
+        env:
+          PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          TOPIC: ${{ github.event.inputs.topic }}
+        run: |
+          python3 << 'PYEOF'
+          import base64, html, json, re, sys, time, urllib.error, urllib.parse, urllib.request
+          import os
+
+          MASTER_OWNER = 'keshavkarn1976-bit'
+          MASTER_REPO = 'training'
+
+          PAT_TOKEN = os.environ['PAT_TOKEN']
+          SUPABASE_URL = os.environ['SUPABASE_URL'].rstrip('/')
+          SUPABASE_KEY = os.environ['SUPABASE_KEY']
+          TOPIC = os.environ['TOPIC'].strip()
+
+          if not TOPIC:
+              print("::error::Topic input is empty.")
+              sys.exit(1)
+
+          TOPIC_SLUG = TOPIC.lower()
+          REPO_NAME = f'training-{TOPIC_SLUG}'
+
+
+          def fail(message):
+              print(f"::error::{message}")
+              sys.exit(1)
+
+
+          def gh_api_request(url, method='GET', data=None):
+              headers = {
+                  'Authorization': f'token {PAT_TOKEN}',
+                  'Accept': 'application/vnd.github+json',
+                  'User-Agent': 'training-child-repo-workflow',
+              }
+              body = None
+              if data is not None:
+                  body = json.dumps(data).encode('utf-8')
+                  headers['Content-Type'] = 'application/json'
+              req = urllib.request.Request(url, data=body, headers=headers, method=method)
+              try:
+                  with urllib.request.urlopen(req) as resp:
+                      raw = resp.read()
+                      return resp.getcode(), (json.loads(raw) if raw else {})
+              except urllib.error.HTTPError as e:
+                  raw = e.read()
+                  try:
+                      parsed = json.loads(raw) if raw else {}
+                  except json.JSONDecodeError:
+                      parsed = {'message': raw.decode('utf-8', errors='replace')}
+                  return e.code, parsed
+              except urllib.error.URLError as e:
+                  fail(f"Network error calling {url}: {e}")
+
+
+          print(f"=== Creating child training portal for topic: {TOPIC} ===")
+          print(f"Target repo name: {REPO_NAME}")
+
+          # ---------------------------------------------------------------------------
+          # Step 1: read master files (index.html head, css/style.css, tailwind config)
+          # ---------------------------------------------------------------------------
+          print("\n[1/6] Reading master files from keshavkarn1976-bit/training ...")
+
+
+          def get_master_file(path):
+              url = f'https://api.github.com/repos/{MASTER_OWNER}/{MASTER_REPO}/contents/{path}'
+              status, resp = gh_api_request(url)
+              if status != 200:
+                  fail(f"Failed to read master file '{path}': HTTP {status} - {resp.get('message', resp)}")
+              return base64.b64decode(resp['content']).decode('utf-8')
+
+
+          master_index_html = get_master_file('index.html')
+          print("  Read index.html")
+          master_css = get_master_file('css/style.css')
+          print("  Read css/style.css")
+          master_tailwind_config = get_master_file('js/tailwind-config.js')
+          print("  Read js/tailwind-config.js")
+
+          head_match = re.search(r'<head>(.*?)</head>', master_index_html, re.DOTALL | re.IGNORECASE)
+          if not head_match:
+              fail("Could not find <head>...</head> in master index.html")
+          head_content = head_match.group(1)
+
+          head_content = re.sub(
+              r'<link[^>]*href=["\']css/style\.css["\'][^>]*>\s*',
+              f'<style>\n{master_css}\n</style>\n',
+              head_content,
+          )
+          head_content = re.sub(
+              r'<script[^>]*src=["\']js/tailwind-config\.js["\'][^>]*></script>\s*',
+              f'<script>\n{master_tailwind_config}\n</script>\n',
+              head_content,
+          )
+          head_content = re.sub(
+              r'<title>.*?</title>',
+              f'<title>{html.escape(TOPIC)} Training Portal | GitMastery</title>',
+              head_content,
+              flags=re.DOTALL,
+          )
+          print("  Head section extracted; css/style.css and tailwind-config.js inlined (no external file references)")
+
+          # ---------------------------------------------------------------------------
+          # Step 2: fetch courses from Supabase for this topic
+          # ---------------------------------------------------------------------------
+          print(f"\n[2/6] Fetching courses from Supabase where tech = '{TOPIC}' ...")
+
+
+          def fetch_courses(topic):
+              query = urllib.parse.quote(topic, safe='')
+              url = f'{SUPABASE_URL}/rest/v1/trainingdata?select=*&tech=eq.{query}&order=id.asc'
+              req = urllib.request.Request(url, headers={
+                  'apikey': SUPABASE_KEY,
+                  'Authorization': f'Bearer {SUPABASE_KEY}',
+              })
+              try:
+                  with urllib.request.urlopen(req) as resp:
+                      status = resp.getcode()
+                      raw = resp.read()
+              except urllib.error.HTTPError as e:
+                  fail(f"Supabase request failed: HTTP {e.code} - {e.read().decode('utf-8', errors='replace')}")
+              except urllib.error.URLError as e:
+                  fail(f"Network error calling Supabase: {e}")
+              if status != 200:
+                  fail(f"Supabase returned unexpected status {status}")
+              return json.loads(raw)
+
+
+          courses = fetch_courses(TOPIC)
+          print(f"  Found {len(courses)} course(s) for tech = '{TOPIC}'")
+
+          if len(courses) == 0:
+              fail(
+                  f"No courses found in Supabase for tech = '{TOPIC}'. "
+                  f"Check spelling/case - it must match the tech column exactly "
+                  f"(e.g. GitHub, Docker, Kubernetes, Cloud, DevOps)."
+              )
+
+          # ---------------------------------------------------------------------------
+          # Step 3: create the child repo (or continue if it already exists)
+          # ---------------------------------------------------------------------------
+          print(f"\n[3/6] Creating repo '{REPO_NAME}' ...")
+
+          status, resp = gh_api_request(
+              'https://api.github.com/user/repos',
+              method='POST',
+              data={
+                  'name': REPO_NAME,
+                  'description': f'{TOPIC} Training Portal',
+                  'private': False,
+                  'auto_init': True,
+              },
+          )
+          if status == 201:
+              print(f"  Created new repo: {REPO_NAME}")
+              print("  Waiting a few seconds for the repo to initialize ...")
+              time.sleep(5)
+          elif status == 422:
+              print(f"  Repo '{REPO_NAME}' already exists, continuing")
+          else:
+              fail(f"Failed to create repo '{REPO_NAME}': HTTP {status} - {resp}")
+
+          # ---------------------------------------------------------------------------
+          # Step 4: build the standalone child index.html
+          # ---------------------------------------------------------------------------
+          print("\n[4/6] Building standalone index.html ...")
+
+
+          def course_card(course):
+              title = html.escape(str(course.get('title') or ''))
+              desc = html.escape(str(course.get('desc') or ''))
+              tech = html.escape(str(course.get('tech') or ''))
+              link = html.escape(str(course.get('link') or '#'), quote=True)
+              return (
+                  '<div class="bg-surface-container-lowest border border-outline-variant p-6 rounded-lg '
+                  'course-card-hover flex flex-col relative overflow-hidden group hover:-translate-y-2 '
+                  'hover:shadow-xl transition-all duration-300">\n'
+                  '<div class="absolute top-0 left-0 w-full h-1 bg-primary"></div>\n'
+                  f'<h3 class="font-headline-md text-headline-md text-on-surface mb-2">{title}</h3>\n'
+                  f'<p class="font-body-md text-body-md text-on-surface-variant mb-6 flex-grow">{desc}</p>\n'
+                  '<span class="font-label-sm text-label-sm bg-surface-container-high px-2 py-1 rounded '
+                  f'text-on-surface-variant uppercase tracking-wider inline-block mb-4 self-start">{tech}</span>\n'
+                  '<a class="w-full text-center bg-primary text-on-primary py-2.5 font-label-md text-label-md '
+                  f'rounded hover:bg-primary-container transition-all block" href="{link}" target="_blank" '
+                  'rel="noopener noreferrer">Learn More</a>\n'
+                  '</div>'
+              )
+
+
+          cards_html = '\n'.join(course_card(c) for c in courses)
+          course_count = len(courses)
+          topic_escaped = html.escape(TOPIC)
+
+          body_html = f'''<body class="bg-background text-on-surface font-body-md">
+          <header class="bg-surface-container-lowest border-b border-outline-variant">
+          <div class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop h-16 flex items-center">
+          <span class="font-headline-md text-headline-md font-bold text-primary">{topic_escaped} Training Portal</span>
+          </div>
+          </header>
+          <main>
+          <section class="hero-gradient py-16 px-margin-mobile md:px-margin-desktop border-b border-outline-variant">
+          <div class="max-w-container-max mx-auto flex flex-col items-center text-center">
+          <h1 class="font-headline-xl text-headline-xl text-on-surface max-w-3xl mb-4">{topic_escaped} Training</h1>
+          <p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">{course_count} course{'' if course_count == 1 else 's'} available in this training path.</p>
+          </div>
+          </section>
+          <section class="py-20 px-margin-mobile md:px-margin-desktop bg-surface-bright">
+          <div class="max-w-container-max mx-auto">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter" id="courseGrid">
+          {cards_html}
+          </div>
+          </div>
+          </section>
+          </main>
+          <footer class="bg-surface-container border-t border-outline-variant">
+          <div class="w-full py-12 px-margin-desktop max-w-container-max mx-auto flex flex-col items-center gap-base">
+          <a class="font-label-md text-label-md text-primary hover:underline" href="https://keshavkarn1976-bit.github.io/training">&larr; Back to GitMastery Training</a>
+          </div>
+          </footer>
+          </body>'''
+
+          full_html = f'<!DOCTYPE html><html class="light" lang="en">\n<head>{head_content}</head>\n{body_html}\n</html>\n'
+          print(f"  Built index.html ({len(full_html)} bytes, {course_count} course card(s))")
+
+          # ---------------------------------------------------------------------------
+          # Step 5: push index.html to the child repo
+          # ---------------------------------------------------------------------------
+          print(f"\n[5/6] Pushing index.html to {REPO_NAME} ...")
+
+          contents_url = f'https://api.github.com/repos/{MASTER_OWNER}/{REPO_NAME}/contents/index.html'
+          existing_sha = None
+          found = False
+          for attempt in range(3):
+              status, resp = gh_api_request(contents_url)
+              if status == 200:
+                  existing_sha = resp.get('sha')
+                  found = True
+                  break
+              elif status == 404:
+                  found = True
+                  break
+              else:
+                  print(f"  Repo not ready yet (HTTP {status}), retrying ...")
+                  time.sleep(3)
+
+          if not found:
+              fail(f"Could not check existing index.html in {REPO_NAME} after retries")
+
+          put_body = {
+              'message': f'Add {TOPIC} courses via automation',
+              'content': base64.b64encode(full_html.encode('utf-8')).decode('ascii'),
+          }
+          if existing_sha:
+              put_body['sha'] = existing_sha
+
+          status, resp = gh_api_request(contents_url, method='PUT', data=put_body)
+          if status not in (200, 201):
+              fail(f"Failed to push index.html to {REPO_NAME}: HTTP {status} - {resp}")
+          print("  index.html pushed")
+
+          # ---------------------------------------------------------------------------
+          # Step 6: enable GitHub Pages
+          # ---------------------------------------------------------------------------
+          print(f"\n[6/6] Enabling GitHub Pages on {REPO_NAME} ...")
+
+          status, resp = gh_api_request(
+              f'https://api.github.com/repos/{MASTER_OWNER}/{REPO_NAME}/pages',
+              method='POST',
+              data={'source': {'branch': 'main', 'path': '/'}},
+          )
+          if status == 201:
+              print("  GitHub Pages enabled")
+          elif status == 409:
+              print("  GitHub Pages already enabled, continuing")
+          else:
+              fail(f"Failed to enable GitHub Pages on {REPO_NAME}: HTTP {status} - {resp}")
+
+          # ---------------------------------------------------------------------------
+          # Summary
+          # ---------------------------------------------------------------------------
+          live_url = f'https://{MASTER_OWNER}.github.io/{REPO_NAME}'
+          print("\n=== Done ===")
+          print(f"✓ Repo created: {REPO_NAME}")
+          print("✓ index.html pushed")
+          print("✓ GitHub Pages enabled")
+          print(f"✓ Live URL: {live_url}")
+          print("Note: takes 1-2 mins to go live first time")
+          PYEOF
