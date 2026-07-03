@@ -1,65 +1,23 @@
-loadComponent("header", "components/header.html");
-
-loadComponent("footer", "components/footer.html");
-
-
-async function loadTrainingData() {
-
-    const container =
-        document.getElementById("training-list");
-
-    const { data, error } =
-        await supabaseClient
-        .from("trainingdata")
-        .select("*")
-        .order("id");
-
-    if(error){
-
-        container.innerHTML=`
-            <div class="card">
-                <h3>Error</h3>
-                <p>${error.message}</p>
-            </div>
-        `;
-
-        return;
-    }
-
-    container.innerHTML="";
-
-    data.forEach(item=>{
-
-        container.innerHTML+=`
-
-        <div class="card">
-
-            <h3>${item.title}</h3>
-
-            <p>${item.desc ?? ""}</p>
-
-            <div class="tech">
-
-                ${item.tech ?? ""}
-
-            </div>
-
-            <br>
-
-            <a class="btn"
-               href="${item.link}"
-               target="_blank">
-
-                Open Training
-
-            </a>
-
-        </div>
-
-        `;
-
+// Micro-interaction for buttons
+document.querySelectorAll('button').forEach(button => {
+    button.addEventListener('mousedown', () => {
+        button.style.transform = 'scale(0.98)';
     });
+    button.addEventListener('mouseup', () => {
+        button.style.transform = 'scale(1)';
+    });
+    button.addEventListener('mouseleave', () => {
+        button.style.transform = 'scale(1)';
+    });
+});
 
+// Search bar focus interaction
+const searchInput = document.querySelector('input[type="text"]');
+if (searchInput) {
+    searchInput.addEventListener('focus', () => {
+        searchInput.parentElement.classList.add('ring-2', 'ring-primary/20');
+    });
+    searchInput.addEventListener('blur', () => {
+        searchInput.parentElement.classList.remove('ring-2', 'ring-primary/20');
+    });
 }
-
-loadTrainingData();
