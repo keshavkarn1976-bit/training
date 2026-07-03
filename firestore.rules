@@ -5,28 +5,23 @@ service cloud.firestore {
 
     match /users/{userId} {
 
-      // A user can read their own doc; the hardcoded admin email can read/list all docs.
+      // (1) own doc read, (4) admin email can read all docs
       allow read: if request.auth != null
         && (request.auth.uid == userId
             || request.auth.token.email == 'keshav.karn@gmail.com');
 
-      // Created once, by the owning user, with role derived from their verified email
-      // (never from client input) and no extra fields.
+      // (2) role set only on create, derived from the caller's verified email
       allow create: if request.auth != null
         && request.auth.uid == userId
-        && request.resource.data.email == request.auth.token.email
         && request.resource.data.role ==
-             (request.auth.token.email == 'keshav.karn@gmail.com' ? 'admin' : 'user')
-        && request.resource.data.keys().hasAll(
-             ['email', 'displayName', 'photoURL', 'role', 'createdAt', 'lastLogin'])
-        && request.resource.data.keys().hasOnly(
-             ['email', 'displayName', 'photoURL', 'role', 'createdAt', 'lastLogin']);
+             (request.auth.token.email == 'keshav.karn@gmail.com' ? 'admin' : 'user');
 
-      // Subsequent sign-ins may only touch lastLogin - role/email/etc. are immutable.
+      // (3) update may only touch lastLogin - role (and everything else) is immutable
       allow update: if request.auth != null
         && request.auth.uid == userId
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lastLogin']);
 
+      // (5) no client-side deletes
       allow delete: if false;
     }
   }
